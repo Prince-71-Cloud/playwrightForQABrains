@@ -1,0 +1,25 @@
+{
+  "name": "qabrains",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --ui",
+    "test:debug": "npx playwright test --debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prince-71-Cloud/playwrightForQABrains.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Prince-71-Cloud/playwrightForQABrains/issues"
+  },
+  "homepage": "https://github.com/Prince-71-Cloud/playwrightForQABrains#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
+}
