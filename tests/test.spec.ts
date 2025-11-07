@@ -35,7 +35,6 @@ test.describe('QA Brains Website Complete Navigation Test', () => {
     const qaTopicsLink = navContainer.getByRole('link', { name: 'QA Topics' });
 
     await expect(qaTopicsLink).toBeVisible();
-
     const [qaTopicsPage] = await Promise.all([
       context.waitForEvent('page'), // Correct: use context
       qaTopicsLink.click(),
