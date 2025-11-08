@@ -42,14 +42,15 @@ test.describe("Footer Links Functionality", () => {
         // bring original page front if still available
         if (!page.isClosed()) await page.bringToFront();
       } else {
-        // fallback: treat it as same-tab navigation
+        // fallback: treat it as same-tab navigation; reset by navigating back to base URL
         await Promise.all([
           page
             .waitForNavigation({ waitUntil: "networkidle" })
             .catch(() => null),
         ]);
         await expect(page).toHaveURL(new RegExp(`^${expectedUrl}`));
-        await page.goBack();
+        // Instead of relying on history (goBack), navigate directly to base to ensure a clean state
+        await page.goto(baseURL);
         await page.waitForLoadState("networkidle");
       }
     } else {
@@ -60,8 +61,8 @@ test.describe("Footer Links Functionality", () => {
       ]);
       // Some links may be absolute or relative; assert startsWith expectedUrl
       await expect(page).toHaveURL(new RegExp(`^${expectedUrl}`));
-      // go back to base for next checks
-      await page.goBack();
+      // Reset to base URL for the next iteration to avoid relying on history
+      await page.goto(baseURL);
       await page.waitForLoadState("networkidle");
     }
   };
@@ -120,19 +121,8 @@ test.describe("Footer Links Functionality", () => {
       const href = await locator.getAttribute("href");
       expect(href).toBeTruthy();
       expect(href!.startsWith(s.expected)).toBeTruthy();
-      // If it opens in a new tab, ensure clicking opens a page and has reachable response
-      const target = await locator.getAttribute("target");
-      if (target === "_blank") {
-        const [newPage] = await Promise.all([
-          context.waitForEvent("page"),
-          locator.click(),
-        ]);
-        await newPage.waitForLoadState("domcontentloaded");
-        // just ensure URL contains the domain
-        expect(newPage.url()).toContain(new URL(s.expected).host);
-        await newPage.close();
-        await page.bringToFront();
-      }
+      // Use the shared helper which handles both _blank and same-tab behavior
+      await clickAndAssertNavigation(page, context, locator, s.expected);
     }
   });
 
