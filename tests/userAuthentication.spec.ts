@@ -199,7 +199,10 @@ test.describe("User Authentication Test Suite", () => {
     await page.getByRole("button", { name: "Login" }).click();
 
     // Verify error or validation message is shown
-    await expect(page.getByText(popUpMessage.failure_both)).toBeVisible({
+    await expect(page.getByText(emptyWarning.email)).toBeVisible({
+      timeout: TIMEOUTS.DEFAULT,
+    });
+    await expect(page.getByText(emptyWarning.password)).toBeVisible({
       timeout: TIMEOUTS.DEFAULT,
     });
     await expect(
