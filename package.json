@@ -6,7 +6,10 @@
   "scripts": {
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui",
-    "test:debug": "npx playwright test --debug"
+    "test:debug": "npx playwright test --debug",
+    "test:allure": "npx playwright test --reporter=line,allure-playwright",
+    "allure:generate": "allure generate allure-results --clean",
+    "allure:open": "allure open"
   },
   "repository": {
     "type": "git",
@@ -20,6 +23,8 @@
   },
   "homepage": "https://github.com/Prince-71-Cloud/playwrightForQABrains#readme",
   "devDependencies": {
-    "@playwright/test": "^1.56.1"
+    "@playwright/test": "^1.56.1",
+    "allure-playwright": "^3.0.1",
+    "allure-commandline": "^2.27.0"
   }
 }
