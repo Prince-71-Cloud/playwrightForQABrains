@@ -192,7 +192,6 @@ test.describe("User Registration Test Suite", () => {
 
     // Click second "Next" button
     await page.getByRole("button").nth(1).click();
-
     // Verify error message for password mismatch
     await expect(page.getByText(warningMessages.password_mismatch))
       .toBeVisible()
