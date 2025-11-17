@@ -26,7 +26,7 @@ test.describe("QA Brains Website Complete Navigation Test", () => {
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveURL(`${baseURL}`);
 
-    // helper to close a popup/new tab and switch back to the main page
+    // Helper to close popup and switch back
     const closePopupAndSwitchBack = async (popupPage: Page | null) => {
       if (popupPage && !popupPage.isClosed()) {
         await popupPage.close();

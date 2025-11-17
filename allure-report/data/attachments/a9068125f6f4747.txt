@@ -1,0 +1,5 @@
+Error clicking footer link Discussion: TimeoutError: page.waitForLoadState: Timeout 30000ms exceeded.
+=========================== logs ===========================
+  "domcontentloaded" event fired
+  "load" event fired
+============================================================

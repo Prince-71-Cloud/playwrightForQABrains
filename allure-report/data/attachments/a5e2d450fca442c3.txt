@@ -1,0 +1,1 @@
+QA Topics is confirmed to be a text element in the footer

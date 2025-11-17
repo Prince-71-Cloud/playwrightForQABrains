@@ -57,22 +57,18 @@ test.describe("User Registration Test Suite", () => {
       .getByRole("textbox", { name: "Password*", exact: true })
       .fill(VALID_USER.password);
 
-    // Click first "Next" button to go to confirm password page
-    await page.getByRole("button").first().click();
-
     await page
       .getByRole("textbox", { name: "Confirm Password*" })
       .fill(VALID_USER.confirmPassword);
 
     // Click signup button
-    await page.getByRole("button").first().click();
+    await page.getByRole("button", { name: "SIGNUP" }).click();
+    await page.waitForLoadState("networkidle");
+
     // Verify successful registration
-    await expect(page.getByText("Registration Successful"))
-      .toBeVisible()
-      .catch(() => {
-        // If specific validation message doesn't exist, just verify we didn't proceed to next step
-        expect(true).toBe(true); // Placeholder - adjust based on actual validation behavior
-      });
+    await expect(
+      page.getByRole("heading", { name: "Registration Successful" })
+    ).toBeVisible();
   });
 
   test("Invalid Registration - Name field validation", async ({ page }) => {
@@ -91,17 +87,10 @@ test.describe("User Registration Test Suite", () => {
       .getByRole("textbox", { name: "Password*", exact: true })
       .fill(VALID_USER.password);
 
-    // Click first "Next" button
-    await page.getByRole("button").first().click();
-
     // Check if there's a validation error for name field
+    await page.getByRole("button", { name: "SIGNUP" }).click();
     // (This would depend on how the application handles validation)
-    await expect(page.getByText(warningMessages.name_required))
-      .toBeVisible()
-      .catch(() => {
-        // If specific validation message doesn't exist, just verify we didn't proceed to next step
-        expect(true).toBe(true); // Placeholder - adjust based on actual validation behavior
-      });
+    await expect(page.getByText(warningMessages.name_required)).toBeVisible();
   });
 
   test("Invalid Registration - Email format validation", async ({ page }) => {
@@ -122,17 +111,13 @@ test.describe("User Registration Test Suite", () => {
       .getByRole("textbox", { name: "Password*", exact: true })
       .fill(VALID_USER.password);
 
-    // Click first "Next" button
-    await page.getByRole("button").first().click();
+    // Click signup button to trigger validation
+    await page.getByRole("button", { name: "SIGNUP" }).click();
 
-    // Check if there's a validation error for email field
-    // (This would depend on how the application handles validation)
-    await expect(page.getByText(warningMessages.email_invalid))
-      .toBeVisible()
-      .catch(() => {
-        // If specific validation message doesn't exist, just verify we didn't proceed to next step
-        expect(true).toBe(true); // Placeholder - adjust based on actual validation behavior
-      });
+    // Verify successful registration
+    await expect(
+      page.getByRole("heading", { name: "Registration Successful" })
+    ).not.toBeVisible();
   });
 
   test("Invalid Registration - Password validation", async ({ page }) => {
@@ -151,17 +136,11 @@ test.describe("User Registration Test Suite", () => {
       .getByRole("textbox", { name: "Password*", exact: true })
       .fill("weak");
 
-    // Click first "Next" button
-    await page.getByRole("button").first().click();
+    // Click signup button to trigger validation
+    await page.getByRole("button", { name: "SIGNUP" }).click();
 
-    // Check if there's a validation error for password field
-    // (This would depend on how the application handles validation)
-    await expect(page.getByText(warningMessages.weak_password))
-      .toBeVisible()
-      .catch(() => {
-        // If specific validation message doesn't exist, just verify we didn't proceed to next step
-        expect(true).toBe(true); // Placeholder - adjust based on actual validation behavior
-      });
+    // Check if there's a validation error for weak password
+    await expect(page.getByText(warningMessages.weak_password)).toBeVisible();
   });
 
   test("Invalid Registration - Password and Confirm Password mismatch", async ({
@@ -183,7 +162,7 @@ test.describe("User Registration Test Suite", () => {
       .fill(VALID_USER.password);
 
     // Click first "Next" button
-    await page.getByRole("button").first().click();
+    await page.getByRole("button", { name: "NEXT" }).click();
 
     // Enter different confirmation password
     await page
@@ -191,13 +170,10 @@ test.describe("User Registration Test Suite", () => {
       .fill("differentPassword");
 
     // Click second "Next" button
-    await page.getByRole("button").nth(1).click();
+    await page.getByRole("button", { name: "SIGNUP" }).click();
     // Verify error message for password mismatch
-    await expect(page.getByText(warningMessages.password_mismatch))
-      .toBeVisible()
-      .catch(() => {
-        // If specific validation message doesn't exist, just verify we didn't proceed to signup
-        expect(true).toBe(true); // Placeholder - adjust based on actual validation behavior
-      });
+    await expect(
+      page.getByText(warningMessages.password_mismatch)
+    ).toBeVisible();
   });
 });
