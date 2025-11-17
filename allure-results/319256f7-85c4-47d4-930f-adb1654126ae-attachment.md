@@ -1,0 +1,141 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e7]:
+      - link "Logo (Practice Site)" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - img "Logo" [ref=e9]
+        - generic [ref=e10]: (Practice Site)
+      - navigation [ref=e11]:
+        - link "Home" [ref=e12] [cursor=pointer]:
+          - /url: /
+        - link "QA Topics" [ref=e13] [cursor=pointer]:
+          - /url: https://qabrains.com/topics
+        - link "Discussion" [ref=e14] [cursor=pointer]:
+          - /url: https://qabrains.com/discussion
+        - link "Tags" [ref=e15] [cursor=pointer]:
+          - /url: https://qabrains.com/tags
+        - link "Jobs" [ref=e16] [cursor=pointer]:
+          - /url: https://qabrains.com/jobs
+        - link "Practice Site" [ref=e17] [cursor=pointer]:
+          - /url: https://qabrains.com/practice-site
+        - link "About Us" [ref=e18] [cursor=pointer]:
+          - /url: https://qabrains.com/about
+      - link "Sign In" [ref=e20] [cursor=pointer]:
+        - /url: https://qabrains.com/auth/login
+        - text: Sign In
+        - img [ref=e21]
+    - generic [ref=e24]:
+      - complementary [ref=e25]:
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - heading "Demo Module" [level=3] [ref=e28]
+            - menu [ref=e29]:
+              - menuitem "User Authentication" [expanded] [ref=e30] [cursor=pointer]:
+                - generic [ref=e31]: User Authentication
+                - img [ref=e33]
+              - menu [ref=e35]:
+                - menuitem "Login" [ref=e36] [cursor=pointer]:
+                  - generic [ref=e37]: Login
+                - menuitem "Registration" [ref=e38] [cursor=pointer]:
+                  - generic [ref=e39]: Registration
+                - menuitem "Forgot Password" [ref=e40] [cursor=pointer]:
+                  - generic [ref=e41]: Forgot Password
+              - menuitem "Form Submission" [ref=e42] [cursor=pointer]:
+                - generic [ref=e43]: Form Submission
+              - menuitem "Drag and Drop List" [ref=e44] [cursor=pointer]:
+                - generic [ref=e45]: Drag and Drop List
+          - generic [ref=e46]:
+            - heading "Demo Site" [level=3] [ref=e47]
+            - menu [ref=e48]:
+              - menuitem "E-Commerce Site" [ref=e49] [cursor=pointer]:
+                - generic [ref=e50]: E-Commerce Site
+              - menuitem "Booking Site" [disabled] [ref=e51]:
+                - generic [ref=e52]: Booking Site
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - heading "QA Practice Site" [level=1] [ref=e55]
+          - paragraph [ref=e56]:
+            - text: Learn and practice QA to master software testing, find bugs, and ensure quality. Build skills for reliable,
+            - text: high-performing applications.
+        - generic [ref=e58]:
+          - generic [ref=e60]:
+            - heading "User Authentication" [level=2] [ref=e61]
+            - generic [ref=e62]:
+              - generic [ref=e64]:
+                - img [ref=e65]
+                - generic [ref=e67]: Registration Successful
+                - img [ref=e69] [cursor=pointer]
+              - generic [ref=e71]:
+                - img [ref=e73]
+                - heading "Registration Successful" [level=2] [ref=e76]
+                - paragraph [ref=e77]: Congratulations. You have successfully logged in. When you are done click logout below.
+            - button "Login" [ref=e78] [cursor=pointer]:
+              - text: Login
+              - img [ref=e79]
+          - generic [ref=e82]:
+            - heading "Leave Feedback" [level=2] [ref=e83]
+            - textbox "Write Comment..." [ref=e84]
+            - generic [ref=e85]:
+              - button "Submit" [disabled]
+    - generic [ref=e86]:
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - link "logo" [ref=e90] [cursor=pointer]:
+            - /url: https://qabrains.com
+            - img "logo" [ref=e91]
+          - paragraph [ref=e92]: QA Brains is the ultimate QA Community to exchange knowledge, seek advice, and engage in discussions that enhance Quality Assurance testers' skills and expertise.
+        - generic [ref=e93]:
+          - heading "QA Topics" [level=3] [ref=e94]
+          - list [ref=e95]:
+            - listitem [ref=e96]:
+              - link "Web Testing" [ref=e97] [cursor=pointer]:
+                - /url: https://qabrains.com/topics/web-testing
+            - listitem [ref=e98]:
+              - link "Interview Questions" [ref=e99] [cursor=pointer]:
+                - /url: https://qabrains.com/topics/interview-questions
+            - listitem [ref=e100]:
+              - link "Testing Framework" [ref=e101] [cursor=pointer]:
+                - /url: https://qabrains.com/topics/testing-framework
+            - listitem [ref=e102]:
+              - link "See more" [ref=e103] [cursor=pointer]:
+                - /url: https://qabrains.com/topics
+                - text: See more
+                - img [ref=e105]
+        - generic [ref=e107]:
+          - heading "Quick Links" [level=3] [ref=e108]
+          - list [ref=e109]:
+            - listitem [ref=e110]:
+              - link "Discussion" [ref=e111] [cursor=pointer]:
+                - /url: https://qabrains.com/discussion
+            - listitem [ref=e112]:
+              - link "About Us" [ref=e113] [cursor=pointer]:
+                - /url: https://qabrains.com/about
+            - listitem [ref=e114]:
+              - link "Terms & Conditions" [ref=e115] [cursor=pointer]:
+                - /url: https://qabrains.com/terms
+            - listitem [ref=e116]:
+              - link "Privacy Policy" [ref=e117] [cursor=pointer]:
+                - /url: https://qabrains.com/policy
+        - generic [ref=e118]:
+          - heading "Follow Us" [level=3] [ref=e119]
+          - generic [ref=e120]:
+            - link [ref=e121] [cursor=pointer]:
+              - /url: https://www.linkedin.com/showcase/qabrainscom
+              - img [ref=e122]
+            - link [ref=e124] [cursor=pointer]:
+              - /url: https://www.facebook.com/qabrainscom
+              - img [ref=e125]
+            - link [ref=e128] [cursor=pointer]:
+              - /url: https://www.youtube.com/@QABrains
+              - img [ref=e129]
+          - generic [ref=e132]:
+            - heading "For Support" [level=3] [ref=e133]
+            - link "support@qabrains.com" [ref=e134] [cursor=pointer]:
+              - /url: mailto:support@qabrains.com
+      - paragraph [ref=e136]: © 2025 QA Brains | All Rights Reserved
+  - region "Notifications alt+T"
+  - alert [ref=e137]: QA Practice Site
+```

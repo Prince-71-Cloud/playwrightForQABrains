@@ -9,58 +9,70 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: "Chrome"
+            browser: "chromium"
+            channel: "chrome"
+          - name: "Firefox"
+            browser: "firefox"
+          - name: "Safari"
+            browser: "webkit"
 
     steps:
     - uses: actions/checkout@v4
-
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-
     - name: Install dependencies
       run: npm ci
-
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-
+      run: npx playwright install --with-deps ${{ matrix.browser }}
     - name: Run Playwright tests
-      run: npx playwright test
+      id: test
+      run: npx playwright test --project=${{ matrix.browser }}
       env:
+        CI: true
+        BASE_URL: ${{ secrets.BASE_URL }}
+        BROWSER: ${{ matrix.browser }}
+        CHANNEL: ${{ matrix.channel }}
+        EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         ALLURE_RESULTS_DIR: allure-results
 
-    - name: Generate Allure Report
+    - name: Generate Allure Report (on test failure)
       uses: simple-elf/allure-report-action@v1.6
-      if: always()
+      if: failure()
       with:
         allure_results: allure-results
         allure_report: allure-report
         allure_history: allure-history
 
-    - name: Archive Allure Report
+    - name: Archive Allure Report (on test failure)
       uses: actions/upload-artifact@v4
-      if: always()
+      if: failure()
       with:
-        name: allure-report
+        name: allure-report-failure
         path: allure-report
 
-    - name: Send Email with Allure Report
-      uses: dawidd6/action-send-mail@v3
-      if: always()
+    - name: Generate Allure Report (on test success)
+      uses: simple-elf/allure-report-action@v1.6
+      if: success()
       with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: Playwright Test Report - ${{ github.repository }} - ${{ github.ref_name }} - ${{ github.sha }}
-        to: bhuiyanaman71@gmail.com
-        from: Playwright Tests
-        html_body: |
-          <h2>Playwright Test Results</h2>
-          <p>Tests were executed for repository: <strong>${{ github.repository }}</strong></p>
-          <p>Branch: <strong>${{ github.ref_name }}</strong></p>
-          <p>Commit SHA: <strong>${{ github.sha }}</strong></p>
-          <p>Status: <strong>${{ job.status }}</strong></p>
-          <p>Please find attached the Allure test report for detailed results.</p>
-        attachments: |
-          allure-report/index.html
+        allure_results: allure-results
+        allure_report: allure-report
+        allure_history: allure-history
+
+    - name: Archive Allure Report (on test success)
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: allure-report-success
+        path: allure-report
