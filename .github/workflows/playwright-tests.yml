@@ -47,32 +47,24 @@ jobs:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         ALLURE_RESULTS_DIR: allure-results
 
-    - name: Generate Allure Report (on test failure)
-      uses: simple-elf/allure-report-action@v1.6
-      if: failure()
-      with:
-        allure_results: allure-results
-        allure_report: allure-report
-        allure_history: allure-history
-
-    - name: Archive Allure Report (on test failure)
+    - name: Upload Allure Results (on test failure)
       uses: actions/upload-artifact@v4
       if: failure()
       with:
-        name: allure-report-failure
-        path: allure-report
+        name: allure-results-failure
+        path: allure-results
 
-    - name: Generate Allure Report (on test success)
-      uses: simple-elf/allure-report-action@v1.6
-      if: success()
+    - name: Generate Allure Report
+      uses: automatiko-io/allure-report-action@v1.2.0
+      if: always()
       with:
-        allure_results: allure-results
-        allure_report: allure-report
-        allure_history: allure-history
+        results: allure-results
+        report: allure-report
+        allure-version: "2.24.0"
 
-    - name: Archive Allure Report (on test success)
+    - name: Archive Allure Report
       uses: actions/upload-artifact@v4
-      if: success()
+      if: always()
       with:
-        name: allure-report-success
+        name: allure-report
         path: allure-report
