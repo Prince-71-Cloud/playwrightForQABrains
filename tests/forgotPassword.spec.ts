@@ -220,7 +220,7 @@ test.describe("Forgot Password Test Suite", () => {
 
   test("Positive: Forgot Password - Whitespace in email should be handled properly", async ({
     page,
-    browserName
+    browserName,
   }) => {
     await page.goto(BASE_URL);
 
@@ -248,7 +248,9 @@ test.describe("Forgot Password Test Suite", () => {
     // In Firefox, the form may prevent submission with whitespace, while other browsers might process it
     if (browserName === "firefox") {
       // For Firefox, verify that the success message is NOT visible (form submission prevented)
-      await expect(page.getByText(/Password is reset successfully./i)).not.toBeVisible({ timeout: TIMEOUTS.API_CALL });
+      await expect(
+        page.getByText(/Password is reset successfully./i)
+      ).not.toBeVisible({ timeout: TIMEOUTS.API_CALL });
     } else {
       // For other browsers, expect the standard response
       await expect(
