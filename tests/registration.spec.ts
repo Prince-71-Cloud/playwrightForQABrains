@@ -20,10 +20,13 @@ const warningMessages = {
   password_mismatch: "Passwords must match",
   weak_password: "Password must be at least 6 characters",
 };
+
+// Increased timeouts for CI/CD environments
 const TIMEOUTS = {
-  DEFAULT: 10000,
-  PAGE_LOAD: 30000,
-  TEST_TOTAL: 120000,
+  DEFAULT: 30000, // Increased from 10s to 30s
+  PAGE_LOAD: 60000, // Increased from 30s to 60s
+  TEST_TOTAL: 300000, // Increased from 120s to 300s
+  ELEMENT_WAIT: 15000, // New timeout for element interactions
 };
 
 test.describe("User Registration Test Suite", () => {
@@ -32,11 +35,18 @@ test.describe("User Registration Test Suite", () => {
   // Setup before each test
   async function navigateToRegistrationPage(page: Page): Promise<void> {
     await page.goto(BASE_URL, { timeout: TIMEOUTS.PAGE_LOAD });
-    await page.getByText("Registration").click();
+    // Wait for page to be fully loaded
+    await page.waitForLoadState("networkidle");
+
+    // Wait for and click Registration link
+    const registrationLink = page.getByText("Registration");
+    await registrationLink.waitFor({ timeout: TIMEOUTS.ELEMENT_WAIT });
+    await registrationLink.click({ timeout: TIMEOUTS.ELEMENT_WAIT });
+
     // Wait for the registration form to load
     await expect(
       page.getByRole("heading", { name: "User Authentication" })
-    ).toBeVisible();
+    ).toBeVisible({ timeout: TIMEOUTS.ELEMENT_WAIT });
   }
 
   test("Valid Registration - Successful user registration with valid credentials", async ({
@@ -44,77 +54,127 @@ test.describe("User Registration Test Suite", () => {
   }) => {
     await navigateToRegistrationPage(page);
 
-    // Fill registration form with valid data
-    await page.getByRole("textbox", { name: "Name*" }).fill(VALID_USER.name);
+    // Fill registration form with valid data, with explicit waits
+    const nameField = page.getByRole("textbox", { name: "Name*" });
+    await nameField.waitFor({ timeout: TIMEOUTS.ELEMENT_WAIT });
+    await nameField.fill(VALID_USER.name);
 
-    await page.getByText("Select Country*").click();
-    await page.getByLabel("Select Country*").selectOption(VALID_USER.country);
+    const countrySelect = page.getByLabel("Select Country*");
+    await expect(countrySelect).toBeVisible();
+    await countrySelect.selectOption(VALID_USER.country);
 
-    await page.getByLabel("Account Type*").selectOption(VALID_USER.accountType);
+    const accountTypeSelect = page.getByLabel("Account Type*");
+    await expect(accountTypeSelect).toBeVisible();
+    await accountTypeSelect.selectOption(VALID_USER.accountType);
 
-    await page.getByRole("textbox", { name: "Email*" }).fill(VALID_USER.email);
-    await page
-      .getByRole("textbox", { name: "Password*", exact: true })
-      .fill(VALID_USER.password);
+    const emailField = page.getByRole("textbox", { name: "Email*" });
+    await expect(emailField).toBeVisible();
+    await emailField.fill(VALID_USER.email);
 
-    await page
-      .getByRole("textbox", { name: "Confirm Password*" })
-      .fill(VALID_USER.confirmPassword);
+    const passwordField = page.getByRole("textbox", {
+      name: "Password*",
+      exact: true,
+    });
+    await expect(passwordField).toBeVisible();
+    await passwordField.fill(VALID_USER.password);
+
+    const confirmPasswordField = page.getByRole("textbox", {
+      name: "Confirm Password*",
+    });
+    await expect(confirmPasswordField).toBeVisible();
+    await confirmPasswordField.fill(VALID_USER.confirmPassword);
 
     // Click signup button
-    await page.getByRole("button", { name: "SIGNUP" }).click();
+    const signupButton = page.getByRole("button", { name: "SIGNUP" });
+    await expect(signupButton).toBeVisible();
+    await signupButton.click();
+
+    // Wait for network idle to ensure all async operations complete
     await page.waitForLoadState("networkidle");
 
     // Verify successful registration
     await expect(
       page.getByRole("heading", { name: "Registration Successful" })
-    ).toBeVisible();
+    ).toBeVisible({ timeout: TIMEOUTS.ELEMENT_WAIT });
   });
 
   test("Invalid Registration - Name field validation", async ({ page }) => {
     await navigateToRegistrationPage(page);
 
     // Leave name field empty and try to proceed
-    await page.getByRole("textbox", { name: "Name*" }).fill("");
+    const nameField = page.getByRole("textbox", { name: "Name*" });
+    await nameField.waitFor({ timeout: TIMEOUTS.ELEMENT_WAIT });
+    await nameField.fill("");
 
-    await page.getByText("Select Country*").click();
-    await page.getByLabel("Select Country*").selectOption(VALID_USER.country);
+    const countrySelect = page.getByLabel("Select Country*");
+    await expect(countrySelect).toBeVisible();
+    await countrySelect.selectOption(VALID_USER.country);
 
-    await page.getByLabel("Account Type*").selectOption(VALID_USER.accountType);
+    const accountTypeSelect = page.getByLabel("Account Type*");
+    await expect(accountTypeSelect).toBeVisible();
+    await accountTypeSelect.selectOption(VALID_USER.accountType);
 
-    await page.getByRole("textbox", { name: "Email*" }).fill(VALID_USER.email);
-    await page
-      .getByRole("textbox", { name: "Password*", exact: true })
-      .fill(VALID_USER.password);
+    const emailField = page.getByRole("textbox", { name: "Email*" });
+    await expect(emailField).toBeVisible();
+    await emailField.fill(VALID_USER.email);
+
+    const passwordField = page.getByRole("textbox", {
+      name: "Password*",
+      exact: true,
+    });
+    await expect(passwordField).toBeVisible();
+    await passwordField.fill(VALID_USER.password);
 
     // Check if there's a validation error for name field
-    await page.getByRole("button", { name: "SIGNUP" }).click();
-    // (This would depend on how the application handles validation)
-    await expect(page.getByText(warningMessages.name_required)).toBeVisible();
+    const signupButton = page.getByRole("button", { name: "SIGNUP" });
+    await expect(signupButton).toBeVisible();
+    await signupButton.click();
+
+    // Wait for validation errors to appear
+    await page.waitForTimeout(2000);
+
+    // Verify the expected error message appears
+    await expect(page.getByText(warningMessages.name_required)).toBeVisible({
+      timeout: TIMEOUTS.ELEMENT_WAIT,
+    });
   });
 
   test("Invalid Registration - Email format validation", async ({ page }) => {
     await navigateToRegistrationPage(page);
 
     // Fill with invalid email format
-    await page.getByRole("textbox", { name: "Name*" }).fill(VALID_USER.name);
+    const nameField = page.getByRole("textbox", { name: "Name*" });
+    await nameField.waitFor({ timeout: TIMEOUTS.ELEMENT_WAIT });
+    await nameField.fill(VALID_USER.name);
 
-    await page.getByText("Select Country*").click();
-    await page.getByLabel("Select Country*").selectOption(VALID_USER.country);
+    const countrySelect = page.getByLabel("Select Country*");
+    await expect(countrySelect).toBeVisible();
+    await countrySelect.selectOption(VALID_USER.country);
 
-    await page.getByLabel("Account Type*").selectOption(VALID_USER.accountType);
+    const accountTypeSelect = page.getByLabel("Account Type*");
+    await expect(accountTypeSelect).toBeVisible();
+    await accountTypeSelect.selectOption(VALID_USER.accountType);
 
-    await page
-      .getByRole("textbox", { name: "Email*" })
-      .fill("invalid-email-format");
-    await page
-      .getByRole("textbox", { name: "Password*", exact: true })
-      .fill(VALID_USER.password);
+    const emailField = page.getByRole("textbox", { name: "Email*" });
+    await expect(emailField).toBeVisible();
+    await emailField.fill("invalid-email-format");
+
+    const passwordField = page.getByRole("textbox", {
+      name: "Password*",
+      exact: true,
+    });
+    await expect(passwordField).toBeVisible();
+    await passwordField.fill(VALID_USER.password);
 
     // Click signup button to trigger validation
-    await page.getByRole("button", { name: "SIGNUP" }).click();
+    const signupButton = page.getByRole("button", { name: "SIGNUP" });
+    await expect(signupButton).toBeVisible();
+    await signupButton.click();
 
-    // Verify successful registration
+    // Wait for potential validation errors to appear
+    await page.waitForTimeout(2000);
+
+    // Verify registration was not successful
     await expect(
       page.getByRole("heading", { name: "Registration Successful" })
     ).not.toBeVisible();
@@ -124,23 +184,41 @@ test.describe("User Registration Test Suite", () => {
     await navigateToRegistrationPage(page);
 
     // Fill with weak password
-    await page.getByRole("textbox", { name: "Name*" }).fill(VALID_USER.name);
+    const nameField = page.getByRole("textbox", { name: "Name*" });
+    await nameField.waitFor({ timeout: TIMEOUTS.ELEMENT_WAIT });
+    await nameField.fill(VALID_USER.name);
 
-    await page.getByText("Select Country*").click();
-    await page.getByLabel("Select Country*").selectOption(VALID_USER.country);
+    const countrySelect = page.getByLabel("Select Country*");
+    await expect(countrySelect).toBeVisible();
+    await countrySelect.selectOption(VALID_USER.country);
 
-    await page.getByLabel("Account Type*").selectOption(VALID_USER.accountType);
+    const accountTypeSelect = page.getByLabel("Account Type*");
+    await expect(accountTypeSelect).toBeVisible();
+    await accountTypeSelect.selectOption(VALID_USER.accountType);
 
-    await page.getByRole("textbox", { name: "Email*" }).fill(VALID_USER.email);
-    await page
-      .getByRole("textbox", { name: "Password*", exact: true })
-      .fill("weak");
+    const emailField = page.getByRole("textbox", { name: "Email*" });
+    await expect(emailField).toBeVisible();
+    await emailField.fill(VALID_USER.email);
+
+    const passwordField = page.getByRole("textbox", {
+      name: "Password*",
+      exact: true,
+    });
+    await expect(passwordField).toBeVisible();
+    await passwordField.fill("weak");
 
     // Click signup button to trigger validation
-    await page.getByRole("button", { name: "SIGNUP" }).click();
+    const signupButton = page.getByRole("button", { name: "SIGNUP" });
+    await expect(signupButton).toBeVisible();
+    await signupButton.click();
+
+    // Wait for potential validation errors to appear
+    await page.waitForTimeout(2000);
 
     // Check if there's a validation error for weak password
-    await expect(page.getByText(warningMessages.weak_password)).toBeVisible();
+    await expect(page.getByText(warningMessages.weak_password)).toBeVisible({
+      timeout: TIMEOUTS.ELEMENT_WAIT,
+    });
   });
 
   test("Invalid Registration - Password and Confirm Password mismatch", async ({
@@ -149,31 +227,47 @@ test.describe("User Registration Test Suite", () => {
     await navigateToRegistrationPage(page);
 
     // Fill in form correctly until password confirmation
-    await page.getByRole("textbox", { name: "Name*" }).fill(VALID_USER.name);
+    const nameField = page.getByRole("textbox", { name: "Name*" });
+    await nameField.waitFor({ timeout: TIMEOUTS.ELEMENT_WAIT });
+    await nameField.fill(VALID_USER.name);
 
-    await page.getByText("Select Country*").click();
-    await page.getByLabel("Select Country*").selectOption(VALID_USER.country);
+    const countrySelect = page.getByLabel("Select Country*");
+    await expect(countrySelect).toBeVisible();
+    await countrySelect.selectOption(VALID_USER.country);
 
-    await page.getByLabel("Account Type*").selectOption(VALID_USER.accountType);
+    const accountTypeSelect = page.getByLabel("Account Type*");
+    await expect(accountTypeSelect).toBeVisible();
+    await accountTypeSelect.selectOption(VALID_USER.accountType);
 
-    await page.getByRole("textbox", { name: "Email*" }).fill(VALID_USER.email);
-    await page
-      .getByRole("textbox", { name: "Password*", exact: true })
-      .fill(VALID_USER.password);
+    const emailField = page.getByRole("textbox", { name: "Email*" });
+    await expect(emailField).toBeVisible();
+    await emailField.fill(VALID_USER.email);
 
-    // Click first "Next" button
-    await page.getByRole("button", { name: "NEXT" }).click();
+    const passwordField = page.getByRole("textbox", {
+      name: "Password*",
+      exact: true,
+    });
+    await expect(passwordField).toBeVisible();
+    await passwordField.fill(VALID_USER.password);
 
     // Enter different confirmation password
-    await page
-      .getByRole("textbox", { name: "Confirm Password*" })
-      .fill("differentPassword");
+    const confirmPasswordField = page.getByRole("textbox", {
+      name: "Confirm Password*",
+    });
+    await expect(confirmPasswordField).toBeVisible();
+    await confirmPasswordField.fill("differentPassword");
 
-    // Click second "Next" button
-    await page.getByRole("button", { name: "SIGNUP" }).click();
+    // Click signup button
+    const signupButton = page.getByRole("button", { name: "SIGNUP" });
+    await expect(signupButton).toBeVisible();
+    await signupButton.click();
+
+    // Wait for potential validation errors to appear
+    await page.waitForTimeout(2000);
+
     // Verify error message for password mismatch
-    await expect(
-      page.getByText(warningMessages.password_mismatch)
-    ).toBeVisible();
+    await expect(page.getByText(warningMessages.password_mismatch)).toBeVisible(
+      { timeout: TIMEOUTS.ELEMENT_WAIT }
+    );
   });
 });

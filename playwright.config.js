@@ -31,6 +31,12 @@ module.exports = defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    
+    /* Take screenshots on failure in CI */
+    screenshot: process.env.CI ? 'only-on-failure' : 'off',
+    
+    /* Record video in CI for failed tests */
+    video: process.env.CI ? 'retry-with-video' : 'off',
   },
 
   /* Configure projects for major browsers */
@@ -43,6 +49,11 @@ module.exports = defineConfig({
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+    },
+    
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
     },
 
     /* Test against mobile viewports. */
