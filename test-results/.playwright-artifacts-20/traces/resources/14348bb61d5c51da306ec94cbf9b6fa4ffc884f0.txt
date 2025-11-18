@@ -1,2 +1,0 @@
-en=scroll&epn.percent_scrolled=90&_et=45
-en=click&ep.link_id=&ep.link_classes=inline-block&ep.link_url=https%3A%2F%2Fqabrains.com%2Ftopics&ep.link_domain=qabrains.com&ep.outbound=true&_et=3752&dt=QA%20Practice%20Site

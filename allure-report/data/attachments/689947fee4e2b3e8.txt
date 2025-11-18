@@ -1,3 +1,0 @@
-QA Topics is confirmed to be a text element in the footer
-Error clicking footer link Testing Framework: Error: page.waitForLoadState: Test ended.
-Error clicking footer link See more: Error: locator.count: Test ended.
