@@ -1,4 +1,4 @@
-name: Playwright Tests with Allure Reports
+name: Playwright Tests
 
 on:
   push:
@@ -30,11 +30,9 @@ jobs:
       run: npm ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps ${{ matrix.browser }}
-    - name: Install Allure commandline
-      run: npm install -g allure-commandline@^2.24.0 --save-dev
     - name: Run Playwright tests
       id: test
-      run: npx playwright test --project=${{ matrix.browser }} --reporter=line,allure-playwright
+      run: npx playwright test --project=${{ matrix.browser }} --reporter=line
       env:
         CI: true
         BASE_URL: ${{ secrets.BASE_URL }}
@@ -47,17 +45,10 @@ jobs:
         DB_NAME: ${{ secrets.DB_NAME }}
         DB_USER: ${{ secrets.DB_USER }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        ALLURE_RESULTS_DIR: allure-results
 
-    - name: Generate Allure Report
-      if: always()
-      run: |
-        allure generate allure-results --clean -o allure-report
-        allure report serve -p 0 &
-        
-    - name: Upload Allure Report
+    - name: Upload Test Results
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: allure-report-${{ matrix.browser }}
-        path: allure-report
+        name: test-results-${{ matrix.browser }}
+        path: test-results
