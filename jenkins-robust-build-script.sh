@@ -57,13 +57,7 @@ mkdir -p playwright-report
 
 # Run tests
 echo "Running Playwright tests..."
-if [ "$BROWSER" ]; then
-    echo "Running tests for browser: $BROWSER"
-    npx playwright test --project="$BROWSER" --reporter=line,html,json --output=test-results/
-else
-    echo "Running tests for all configured browsers..."
-    npx playwright test --reporter=line,html,json --output=test-results/
-fi
+npx playwright test --reporter=line,html,json --output=test-results/ --config=playwright.config.js
 
 TEST_EXIT_CODE=$?
 
