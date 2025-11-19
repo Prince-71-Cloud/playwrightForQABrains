@@ -28,12 +28,49 @@ test.describe("User Authentication Test Suite", () => {
 
   // Setup before each test
   async function navigateToAuthPage(page: Page): Promise<void> {
-    await page.goto(BASE_URL, { timeout: TIMEOUTS.PAGE_LOAD });
-    // Use a more specific selector to avoid the strict mode violation
-    // Look for the span inside #demo-module which should be unique
-    const authLink = page.locator("#demo-module").locator("span:text('User Authentication')");
-    await expect(authLink).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
-    await authLink.click({ timeout: TIMEOUTS.DEFAULT });
+    // Handle network timeout issues in Firefox with fallback
+    try {
+      await page.goto(BASE_URL, { timeout: TIMEOUTS.PAGE_LOAD });
+    } catch (error) {
+      console.log(`Warning: Navigation timeout, trying with longer timeout: ${error}`);
+      await page.goto(BASE_URL, { timeout: TIMEOUTS.PAGE_LOAD * 2 });
+    }
+    
+    // Wait for page to be fully loaded
+    try {
+      await page.waitForLoadState("networkidle", { timeout: 30000 });
+    } catch (loadError) {
+      console.log(`Warning: networkidle timeout, continuing: ${loadError}`);
+      try {
+        await page.waitForLoadState("load", { timeout: 10000 });
+      } catch (finalError) {
+        console.log(`Warning: load state also timed out: ${finalError}`);
+        // Continue anyway to try selecting the element
+      }
+    }
+    
+    // Use a more compatible selector that works across browsers
+    // Add retry mechanism for finding the element
+    let elementFound = false;
+    let attempts = 0;
+    const maxAttempts = 3;
+    
+    while (!elementFound && attempts < maxAttempts) {
+      try {
+        await page.waitForSelector("#demo-module", { timeout: TIMEOUTS.DEFAULT });
+        const authLink = page.locator("#demo-module").getByText("User Authentication");
+        await expect(authLink).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+        await authLink.click({ timeout: TIMEOUTS.DEFAULT });
+        elementFound = true;
+      } catch (error) {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          throw error; // Re-throw the error if all attempts fail
+        }
+        console.log(`Attempt ${attempts} failed, retrying: ${error}`);
+        await page.waitForTimeout(2000); // Wait before retrying
+      }
+    }
   }
 
   test("Valid Login - Successful authentication with correct credentials", async ({

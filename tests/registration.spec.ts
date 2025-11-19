@@ -35,13 +35,38 @@ test.describe("User Registration Test Suite", () => {
   // Setup before each test
   async function navigateToRegistrationPage(page: Page): Promise<void> {
     await page.goto(BASE_URL, { timeout: TIMEOUTS.PAGE_LOAD });
-    // Wait for page to be fully loaded
-    await page.waitForLoadState("networkidle");
+    // Wait for page to be fully loaded with error handling
+    try {
+      await page.waitForLoadState("networkidle", { timeout: 30000 });
+    } catch (loadError) {
+      console.log(`Warning: networkidle timeout on registration page, continuing: ${loadError}`);
+      try {
+        await page.waitForLoadState("load", { timeout: 10000 });
+      } catch (finalError) {
+        console.log(`Warning: load state also timed out: ${finalError}`);
+      }
+    }
 
-    // Wait for and click Registration link
-    const registrationLink = page.getByText("Registration");
-    await registrationLink.waitFor({ timeout: TIMEOUTS.ELEMENT_WAIT });
-    await registrationLink.click({ timeout: TIMEOUTS.ELEMENT_WAIT });
+    // Wait for and click Registration link with retry mechanism
+    let elementFound = false;
+    let attempts = 0;
+    const maxAttempts = 3;
+    
+    while (!elementFound && attempts < maxAttempts) {
+      try {
+        const registrationLink = page.getByText("Registration");
+        await expect(registrationLink).toBeVisible({ timeout: TIMEOUTS.ELEMENT_WAIT });
+        await registrationLink.click({ timeout: TIMEOUTS.ELEMENT_WAIT });
+        elementFound = true;
+      } catch (error) {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          throw error; // Re-throw the error if all attempts fail
+        }
+        console.log(`Registration link attempt ${attempts} failed, retrying: ${error}`);
+        await page.waitForTimeout(2000); // Wait before retrying
+      }
+    }
 
     // Wait for the registration form to load
     await expect(

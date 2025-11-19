@@ -35,6 +35,10 @@ module.exports = defineConfig({
     
     /* Record video in CI for failed tests */
     video: process.env.CI ? 'retry-with-video' : 'off',
+    
+    /* Global timeout settings for network operations */
+    actionTimeout: 30000,
+    navigationTimeout: 30000,
   },
 
   /* Configure projects for major browsers */
@@ -46,7 +50,14 @@ module.exports = defineConfig({
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: { 
+        ...devices['Desktop Firefox'],
+        launchOptions: {
+          firefoxUserPrefs: {
+            'network.cors_preflight.allow_persistent': false,
+          }
+        }
+      },
     },
     
     {
