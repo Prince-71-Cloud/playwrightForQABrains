@@ -1,8 +1,14 @@
 import { test, expect, Page } from "@playwright/test";
 
 const baseURL = "https://practice.qabrains.com";
+const TIMEOUTS = {
+  DEFAULT: 30000,
+  PAGE_LOAD: 60000,
+  TEST_TOTAL: 300000,
+  API_CALL: 20000,
+};
 test.describe("QA Brains Website Complete Navigation Test", () => {
-  test.setTimeout(120000); // Set timeout to 2 minutes
+  test.setTimeout(TIMEOUTS.TEST_TOTAL); // Set timeout to 5 minutes
   test("verify all navigation links and buttons functionality", async ({
     page,
     context,
@@ -74,8 +80,8 @@ test.describe("QA Brains Website Complete Navigation Test", () => {
       tagsLink.click(),
     ]);
 
-    // Wait for the new page to load and verify URL
-    await newTagsPage.waitForLoadState("networkidle");
+    // Wait for the new page to load and verify URL with timeout
+    await newTagsPage.waitForLoadState("networkidle", { timeout: TIMEOUTS.PAGE_LOAD });
     await expect(newTagsPage).toHaveURL("https://qabrains.com/tags");
     await closePopupAndSwitchBack(newTagsPage);
 

@@ -228,7 +228,7 @@ test.describe("User Registration Test Suite", () => {
 
     // Fill in form correctly until password confirmation
     const nameField = page.getByRole("textbox", { name: "Name*" });
-    await nameField.waitFor({ timeout: TIMEOUTS.ELEMENT_WAIT });
+    await expect(nameField).toBeVisible({ timeout: TIMEOUTS.ELEMENT_WAIT });
     await nameField.fill(VALID_USER.name);
 
     const countrySelect = page.getByLabel("Select Country*");

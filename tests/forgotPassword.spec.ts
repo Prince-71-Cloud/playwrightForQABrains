@@ -99,16 +99,18 @@ test.describe("Forgot Password Test Suite", () => {
     await emailField.fill(specialEmail);
     await emailField.blur();
 
-    // Click reset password button
-    await page.getByRole("button", { name: "Reset Password" }).click();
+    // Click reset password button with explicit timeout and visibility check
+    const resetButton = page.getByRole("button", { name: "Reset Password" });
+    await expect(resetButton).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await resetButton.click({ timeout: TIMEOUTS.DEFAULT });
 
-    // Wait for network idle
-    await page.waitForLoadState("networkidle");
+    // Wait for network idle with timeout
+    await page.waitForLoadState("networkidle", { timeout: TIMEOUTS.API_CALL });
 
     // Fail-fast: No not-found error
     await expect(
       page.getByText(SUCCESS_MESSAGES.password_reset_initiated)
-    ).toBeVisible();
+    ).toBeVisible({ timeout: TIMEOUTS.API_CALL });
   });
 
   // ... (Negative tests remain unchanged, as they don't rely on existing users)

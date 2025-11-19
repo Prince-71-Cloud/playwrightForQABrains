@@ -29,7 +29,11 @@ test.describe("User Authentication Test Suite", () => {
   // Setup before each test
   async function navigateToAuthPage(page: Page): Promise<void> {
     await page.goto(BASE_URL, { timeout: TIMEOUTS.PAGE_LOAD });
-    await page.locator("#demo-module").getByText("User Authentication").click();
+    // Use a more specific selector to avoid the strict mode violation
+    // Look for the span inside #demo-module which should be unique
+    const authLink = page.locator("#demo-module").locator("span:text('User Authentication')");
+    await expect(authLink).toBeVisible({ timeout: TIMEOUTS.DEFAULT });
+    await authLink.click({ timeout: TIMEOUTS.DEFAULT });
   }
 
   test("Valid Login - Successful authentication with correct credentials", async ({
