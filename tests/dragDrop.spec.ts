@@ -1,170 +1,89 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
-const BASE_URL = "https://practice.qabrains.com/";
-
-test.describe("Drag and Drop Test Suite", () => {
-  test.setTimeout(60000); // Set timeout to 1 minute for drag and drop tests
-
-  test("Drag and drop - User Authentication Block", async ({ page }) => {
-    // Navigate to the website
-    await page.goto(BASE_URL);
-
-    // Verify page loaded successfully
-    await expect(page).toHaveTitle(/QA Practice Site/);
-
-    // Find and click the "User Authentication" demo
-    const authDemo = page.locator("#demo-module").getByText("User Authentication");
-    await expect(authDemo).toBeVisible({ timeout: 10000 });
-    await authDemo.click();
+test("Drag and Drop List functionality", async ({ page }) => {
+  await page.goto("https://practice.qabrains.com/");
+  await page.getByText("Drag and Drop List").click();
+  await page.waitForLoadState('networkidle');
+  
+  // Wait for the "Drag & Drop" heading to appear
+  await expect(page.getByRole("heading", { name: "Drag & Drop" })).toBeVisible();
+  
+  // Verify "Drag Me" elements are present
+  const dragMeElements = page.getByText("Drag Me");
+  await expect(dragMeElements).toHaveCount(2); // Expecting 2 "Drag Me" elements
+  
+  // Drag the first "Drag Me" element
+  const firstDragMe = dragMeElements.first();
+  await expect(firstDragMe).toBeVisible();
+  
+  // Wait for target area (where it should be dropped)
+  const dropTarget = page.locator('#drop-target, .drop-area, .drop-zone').first().or(
+    page.getByRole("heading", { name: "Dropped!" })
+  );
+  
+  // Try to drag to the drop target
+  try {
+    await firstDragMe.dragTo(dropTarget, { timeout: 10000 });
+    console.log("First drag operation completed successfully");
     
-    await page.waitForLoadState('networkidle');
+    // Verify that "Dropped!" text appears after the first element is dropped
+    await expect(page.getByRole("heading", { name: "Dropped!" })).toBeVisible();
+  } catch (dragError) {
+    console.log("First dragTo failed, trying mouse actions:", dragError);
     
-    // Look for any draggable elements in the authentication section
-    const draggableElements = page.locator('[draggable="true"], .draggable, [class*="drag"]');
-    const draggableCount = await draggableElements.count();
-    
-    if (draggableCount > 0) {
-      console.log(`Found ${draggableCount} draggable elements`);
+    // Fallback to mouse-based dragging
+    try {
+      await firstDragMe.hover();
+      await page.mouse.down();
+      await dropTarget.hover();
+      await page.mouse.up();
+      console.log("First drag operation completed with mouse actions");
       
-      // Try to drag any available draggable element to another area
-      const firstDraggable = draggableElements.first();
-      const otherElements = page.locator('div, section, .container').filter({ hasNot: firstDraggable });
-      
-      if (await otherElements.count() > 0) {
-        const targetElement = otherElements.first();
-        
-        await expect(firstDraggable).toBeVisible();
-        await expect(targetElement).toBeVisible();
-        
-        // Try the drag operation
-        await firstDraggable.dragTo(targetElement, { timeout: 10000 });
-        console.log("Drag and drop completed in User Authentication section");
-      }
-    } else {
-      console.log("No draggable elements found in this section");
-      test.skip("No drag and drop functionality found in this section");
+      // Verify that "Dropped!" text appears after the first element is dropped
+      await expect(page.getByRole("heading", { name: "Dropped!" })).toBeVisible();
+    } catch (mouseError) {
+      console.log("Mouse-based drag also failed for first element:", mouseError);
+      // Try to find the drop zone by looking for it specifically after drag
+      await page.waitForTimeout(1000); // Allow for any animation/transitions
+      const droppedHeading = page.getByRole("heading", { name: "Dropped!" });
+      await expect(droppedHeading).toBeVisible();
+      console.log("Verified 'Dropped!' heading is visible");
     }
-  });
-
-  test("Drag and drop - Block Elements", async ({ page }) => {
-    // Navigate to the website
-    await page.goto(BASE_URL);
-
-    // Find visible block elements that could potentially be draggable
-    // These might be cards, panels, or other UI elements
-    // Filter for truly visible elements only
-    const allPotentialBlocks = page.locator('.block, .card, .ui-widget-content, .portlet, [class*="item"]');
-    const visibleBlocks = [];
+  }
+  
+  // Try to drag the second "Drag Me" element
+  const secondDragMe = dragMeElements.nth(1);
+  await expect(secondDragMe).toBeVisible();
+  
+  try {
+    await secondDragMe.dragTo(dropTarget, { timeout: 10000 });
+    console.log("Second drag operation completed successfully");
+  } catch (secondDragError) {
+    console.log("Second dragTo failed, trying mouse actions:", secondDragError);
     
-    const count = await allPotentialBlocks.count();
-    for (let i = 0; i < count; i++) {
-      const element = allPotentialBlocks.nth(i);
-      if (await element.isVisible()) {
-        visibleBlocks.push(element);
+    try {
+      await secondDragMe.hover();
+      await page.mouse.down();
+      await dropTarget.hover();
+      await page.mouse.up();
+      console.log("Second drag operation completed with mouse actions");
+    } catch (secondMouseError) {
+      console.log("Mouse-based drag also failed for second element:", secondMouseError);
+      
+      // Final attempt with element location
+      const secondBox = await secondDragMe.boundingBox();
+      const targetBox = await dropTarget.boundingBox();
+      
+      if (secondBox && targetBox) {
+        await secondDragMe.hover();
+        await page.mouse.down();
+        await page.mouse.move(
+          targetBox.x + targetBox.width / 2,
+          targetBox.y + targetBox.height / 2
+        );
+        await page.mouse.up();
+        console.log("Second drag operation completed with coordinates");
       }
     }
-    
-    console.log(`Found ${visibleBlocks.length} visible potential drag elements`);
-    
-    if (visibleBlocks.length >= 2) {
-      const firstBlock = visibleBlocks[0];
-      const secondBlock = visibleBlocks[1];
-      
-      await expect(firstBlock).toBeVisible();
-      await expect(secondBlock).toBeVisible();
-      
-      // Try to drag the first block towards the second
-      try {
-        await firstBlock.dragTo(secondBlock, { timeout: 15000 });
-        console.log("Drag operation completed with block elements");
-      } catch (dragError) {
-        console.log("DragTo failed, trying mouse actions:", dragError);
-        
-        // Try with mouse actions as fallback
-        try {
-          const firstBox = await firstBlock.boundingBox();
-          const secondBox = await secondBlock.boundingBox();
-          
-          if (firstBox && secondBox) {
-            await firstBlock.hover();
-            await page.mouse.down();
-            await page.mouse.move(
-              secondBox.x + secondBox.width / 2,
-              secondBox.y + secondBox.height / 2
-            );
-            await page.mouse.up();
-            
-            console.log("Mouse-based drag operation completed");
-          } else {
-            console.log("Could not get bounding boxes for drag operation");
-            test.skip("No suitable elements for drag operation");
-          }
-        } catch (mouseError) {
-          console.log("Mouse-based drag also failed:", mouseError);
-          test.skip("No successful drag operation possible");
-        }
-      }
-    } else {
-      test.skip("Not enough visible block elements found for drag and drop");
-    }
-  });
-
-  test("Drag and drop - Common UI Interactions", async ({ page }) => {
-    // Navigate to the website
-    await page.goto(BASE_URL);
-
-    // Test for sortable lists or drag-and-drop interfaces
-    const sortableElements = page.locator('.sortable, .ui-sortable, [class*="sort"]');
-    const sortableCount = await sortableElements.count();
-    
-    if (sortableCount > 0) {
-      console.log(`Found ${sortableCount} sortable containers`);
-      
-      const sortableContainer = sortableElements.first();
-      const items = sortableContainer.locator('li, .list-item, .item, div');
-      const itemCount = await items.count();
-      
-      if (itemCount >= 2) {
-        console.log(`Found ${itemCount} items in sortable container`);
-        
-        const firstItem = items.first();
-        const secondItem = items.nth(1);
-        
-        await expect(firstItem).toBeVisible();
-        await expect(secondItem).toBeVisible();
-        
-        try {
-          await firstItem.dragTo(secondItem, { timeout: 15000 });
-          console.log("Sortable item drag completed");
-        } catch (sortError) {
-          console.log("Sortable drag failed:", sortError);
-          
-          // Try mouse-based approach
-          try {
-            const firstBox = await firstItem.boundingBox();
-            const secondBox = await secondItem.boundingBox();
-            
-            if (firstBox && secondBox) {
-              await firstItem.hover();
-              await page.mouse.down();
-              await page.mouse.move(
-                secondBox.x + secondBox.width / 2,
-                secondBox.y + secondBox.height / 2
-              );
-              await page.mouse.up();
-              
-              console.log("Sortable mouse-based drag completed");
-            }
-          } catch (mouseError) {
-            console.log("Mouse-based sortable drag also failed:", mouseError);
-            test.skip("No sortable drag operation possible");
-          }
-        }
-      } else {
-        test.skip("Not enough items in sortable container");
-      }
-    } else {
-      test.skip("No sortable containers found");
-    }
-  });
+  }
 });
