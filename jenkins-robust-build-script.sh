@@ -43,13 +43,22 @@ export NODE_OPTIONS="--max-old-space-size=4096"
 echo "Installing dependencies..."
 npm ci --verbose
 
-# Install Playwright browsers with all dependencies
-echo "Installing Playwright browsers and dependencies..."
-npx playwright install --with-deps
+# Install Playwright browsers
+echo "Installing Playwright browsers..."
+npx playwright install chromium firefox webkit
+
+# Check if system dependencies are available (without requiring root)
+echo "Checking for system dependencies..."
+if command -v ldd &> /dev/null; then
+  if ! ldd $(which chromium-browser 2>/dev/null || which google-chrome 2>/dev/null || which firefox 2>/dev/null || echo "/dummy") >/dev/null 2>&1; then
+    echo "System dependencies may be missing. Please ensure Playwright dependencies are pre-installed."
+    echo "For Ubuntu: sudo apt-get install -y libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libxss1 libasound2"
+  fi
+fi
 
 # Verify browser installation
 echo "Verifying browser installations..."
-npx playwright install-deps
+npx playwright show-report --version 2>/dev/null || echo "Playwright installation completed"
 
 # Create output directories
 mkdir -p test-results

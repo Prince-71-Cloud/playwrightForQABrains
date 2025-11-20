@@ -35,33 +35,38 @@ pipeline {
         }
 
         stage('Install Playwright Browsers') {
-            parallel {
-                stage('Install Chromium') {
-                    steps {
-                        sh 'npx playwright install chromium --with-deps'
-                    }
-                }
-                stage('Install Firefox') {
-                    steps {
-                        sh 'npx playwright install firefox --with-deps'
-                    }
-                }
-                stage('Install WebKit') {
-                    steps {
-                        sh 'npx playwright install webkit --with-deps'
-                    }
-                }
+            steps {
+                sh '''
+                    # Check if system dependencies are available
+                    if ! ldd $(which chromium-browser || which google-chrome || which firefox) >/dev/null 2>&1; then
+                        echo "System dependencies may be missing. Please ensure Playwright dependencies are pre-installed on Jenkins agent."
+                        echo "For Ubuntu: sudo apt-get install -y libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libxss1 libasound2"
+                        echo "For CentOS/RHEL: sudo yum install -y alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 libdrm.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXfixes.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXss.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 nspr.x86_64 nss.x86_64"
+                    fi
+
+                    # Install Playwright browsers
+                    npx playwright install chromium firefox webkit
+                '''
             }
         }
 
         stage('Install Allure Commandline') {
             steps {
                 sh '''
-                    # Install allure commandline tool
-                    wget https://github.com/allure-framework/allure2/releases/download/2.24.0/allure-2.24.0.tgz
-                    tar -xzf allure-2.24.0.tgz -C /opt
-                    ln -s /opt/allure-2.24.0/bin/allure /usr/local/bin/allure || true
-                    allure --version
+                    # Check if allure is already installed globally
+                    if command -v allure &> /dev/null; then
+                        echo "Allure is already installed globally"
+                        allure --version
+                    else
+                        # Install allure commandline tool locally
+                        wget https://github.com/allure-framework/allure2/releases/download/2.24.0/allure-2.24.0.tgz
+                        tar -xzf allure-2.24.0.tgz -C /tmp
+                        mkdir -p $HOME/allure
+                        mv /tmp/allure-2.24.0/* $HOME/allure/
+                        echo "export PATH=$PATH:$HOME/allure/bin" >> $HOME/.bashrc
+                        export PATH=$PATH:$HOME/allure/bin
+                        allure --version
+                    fi
                 '''
             }
         }
