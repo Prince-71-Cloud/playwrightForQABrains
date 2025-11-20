@@ -54,13 +54,26 @@ pipeline {
             }
         }
 
+        stage('Install Allure Commandline') {
+            steps {
+                sh '''
+                    # Install allure commandline tool
+                    wget https://github.com/allure-framework/allure2/releases/download/2.24.0/allure-2.24.0.tgz
+                    tar -xzf allure-2.24.0.tgz -C /opt
+                    ln -s /opt/allure-2.24.0/bin/allure /usr/local/bin/allure || true
+                    allure --version
+                '''
+            }
+        }
+
         stage('Run Playwright Tests') {
             parallel {
                 stage('Chrome Tests') {
                     steps {
                         sh '''
                             mkdir -p test-results/chrome
-                            npx playwright test --project=chromium --reporter=line --output=test-results/chrome/
+                            mkdir -p allure-results/chrome
+                            ALLURE_ENABLED=true npx playwright test --project=chromium --output=test-results/chrome/ --reporter=line,allure-playwright
                         '''
                     }
                     post {
@@ -73,7 +86,8 @@ pipeline {
                     steps {
                         sh '''
                             mkdir -p test-results/firefox
-                            npx playwright test --project=firefox --reporter=line --output=test-results/firefox/
+                            mkdir -p allure-results/firefox
+                            ALLURE_ENABLED=true npx playwright test --project=firefox --output=test-results/firefox/ --reporter=line,allure-playwright
                         '''
                     }
                     post {
@@ -86,7 +100,8 @@ pipeline {
                     steps {
                         sh '''
                             mkdir -p test-results/webkit
-                            npx playwright test --project=webkit --reporter=line --output=test-results/webkit/
+                            mkdir -p allure-results/webkit
+                            ALLURE_ENABLED=true npx playwright test --project=webkit --output=test-results/webkit/ --reporter=line,allure-playwright
                         '''
                     }
                     post {
@@ -97,7 +112,34 @@ pipeline {
                 }
             }
         }
-        
+
+        stage('Generate Allure Report') {
+            steps {
+                sh '''
+                    # Aggregate Allure results from all test runs
+                    mkdir -p allure-results/all
+                    cp -r allure-results/chrome/* allure-results/all/ 2>/dev/null || true
+                    cp -r allure-results/firefox/* allure-results/all/ 2>/dev/null || true
+                    cp -r allure-results/webkit/* allure-results/all/ 2>/dev/null || true
+
+                    # Generate Allure report
+                    allure generate allure-results/all -o allure-report --clean
+                '''
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'allure-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Allure Report'
+                    ])
+                }
+            }
+        }
+
         stage('Generate Playwright Report') {
             steps {
                 sh '''

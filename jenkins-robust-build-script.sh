@@ -54,10 +54,11 @@ npx playwright install-deps
 # Create output directories
 mkdir -p test-results
 mkdir -p playwright-report
+mkdir -p allure-results
 
 # Run tests
-echo "Running Playwright tests..."
-npx playwright test --reporter=line,html,json --output=test-results/ --config=playwright.config.js
+echo "Running Playwright tests with Allure reporter..."
+ALLURE_ENABLED=true npx playwright test --reporter=line,html,json,allure-playwright --output=test-results/ --config=playwright.config.js
 
 TEST_EXIT_CODE=$?
 
@@ -80,6 +81,16 @@ else
   npx playwright show-report --output=playwright-report
 fi
 
+# Generate Allure report if Allure is available
+if command -v allure &> /dev/null; then
+  echo "Generating Allure report..."
+  allure generate allure-results -o allure-report --clean
+  echo "Allure report available in allure-report/ directory"
+else
+  echo "Allure command-line tool not found. Skipping Allure report generation."
+  echo "To generate Allure reports, install Allure from https://github.com/allure-framework/allure2"
+fi
+
 echo "==========================================="
-echo "Build completed. Results are available in test-results/ and playwright-report/ directories."
+echo "Build completed. Results are available in test-results/, playwright-report/, and allure-report/ directories."
 echo "==========================================="
