@@ -38,14 +38,14 @@ pipeline {
             steps {
                 sh '''
                     # Check if system dependencies are available
-                    if ! ldd $(which chromium-browser || which google-chrome || which firefox) >/dev/null 2>&1; then
+                    if ! ldd $(which chromium-browser || which google-chrome) >/dev/null 2>&1; then
                         echo "System dependencies may be missing. Please ensure Playwright dependencies are pre-installed on Jenkins agent."
                         echo "For Ubuntu: sudo apt-get install -y libnss3 libatk-bridge2.0-0 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libxss1 libasound2"
                         echo "For CentOS/RHEL: sudo yum install -y alsa-lib.x86_64 atk.x86_64 gtk3.x86_64 libdrm.x86_64 libXcomposite.x86_64 libXcursor.x86_64 libXdamage.x86_64 libXext.x86_64 libXfixes.x86_64 libXi.x86_64 libXtst.x86_64 cups-libs.x86_64 libXss.x86_64 libXrandr.x86_64 GConf2.x86_64 alsa-lib.x86_64 nspr.x86_64 nss.x86_64"
                     fi
 
-                    # Install Playwright browsers
-                    npx playwright install chromium firefox webkit
+                    # Install Playwright Chrome browser only
+                    npx playwright install chromium
                 '''
             }
         }
@@ -72,47 +72,17 @@ pipeline {
         }
 
         stage('Run Playwright Tests') {
-            parallel {
-                stage('Chrome Tests') {
-                    steps {
-                        sh '''
-                            mkdir -p test-results/chrome
-                            mkdir -p allure-results/chrome
-                            ALLURE_ENABLED=true npx playwright test --project=chromium --output=test-results/chrome/ --reporter=line,allure-playwright
-                        '''
-                    }
-                    post {
-                        always {
-                            archiveArtifacts artifacts: 'test-results/chrome/**/*', allowEmptyArchive: true
-                        }
-                    }
+            stage('Chrome Tests') {
+                steps {
+                    sh '''
+                        mkdir -p test-results/chrome
+                        mkdir -p allure-results/chrome
+                        ALLURE_ENABLED=true npx playwright test --project=chromium --output=test-results/chrome/ --reporter=line,allure-playwright
+                    '''
                 }
-                stage('Firefox Tests') {
-                    steps {
-                        sh '''
-                            mkdir -p test-results/firefox
-                            mkdir -p allure-results/firefox
-                            ALLURE_ENABLED=true npx playwright test --project=firefox --output=test-results/firefox/ --reporter=line,allure-playwright
-                        '''
-                    }
-                    post {
-                        always {
-                            archiveArtifacts artifacts: 'test-results/firefox/**/*', allowEmptyArchive: true
-                        }
-                    }
-                }
-                stage('WebKit Tests') {
-                    steps {
-                        sh '''
-                            mkdir -p test-results/webkit
-                            mkdir -p allure-results/webkit
-                            ALLURE_ENABLED=true npx playwright test --project=webkit --output=test-results/webkit/ --reporter=line,allure-playwright
-                        '''
-                    }
-                    post {
-                        always {
-                            archiveArtifacts artifacts: 'test-results/webkit/**/*', allowEmptyArchive: true
-                        }
+                post {
+                    always {
+                        archiveArtifacts artifacts: 'test-results/chrome/**/*', allowEmptyArchive: true
                     }
                 }
             }
@@ -121,14 +91,9 @@ pipeline {
         stage('Generate Allure Report') {
             steps {
                 sh '''
-                    # Aggregate Allure results from all test runs
-                    mkdir -p allure-results/all
-                    cp -r allure-results/chrome/* allure-results/all/ 2>/dev/null || true
-                    cp -r allure-results/firefox/* allure-results/all/ 2>/dev/null || true
-                    cp -r allure-results/webkit/* allure-results/all/ 2>/dev/null || true
-
-                    # Generate Allure report
-                    allure generate allure-results/all -o allure-report --clean
+                    # Use Chrome Allure results for report generation
+                    # Generate Allure report from Chrome test results
+                    allure generate allure-results/chrome -o allure-report --clean
                 '''
             }
             post {

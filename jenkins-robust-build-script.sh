@@ -43,9 +43,9 @@ export NODE_OPTIONS="--max-old-space-size=4096"
 echo "Installing dependencies..."
 npm ci --verbose
 
-# Install Playwright browsers
-echo "Installing Playwright browsers..."
-npx playwright install chromium firefox webkit
+# Install Playwright browsers (Chrome only)
+echo "Installing Playwright Chrome browser..."
+npx playwright install chromium
 
 # Check if system dependencies are available (without requiring root)
 echo "Checking for system dependencies..."
@@ -65,9 +65,9 @@ mkdir -p test-results
 mkdir -p playwright-report
 mkdir -p allure-results
 
-# Run tests
-echo "Running Playwright tests with Allure reporter..."
-ALLURE_ENABLED=true npx playwright test --reporter=line,html,json,allure-playwright --output=test-results/ --config=playwright.config.js
+# Run tests (Chrome only)
+echo "Running Playwright Chrome tests with Allure reporter..."
+ALLURE_ENABLED=true npx playwright test --project=chromium --reporter=line,html,json,allure-playwright --output=test-results/ --config=playwright.config.js
 
 TEST_EXIT_CODE=$?
 
