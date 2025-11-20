@@ -36,7 +36,7 @@ module.exports = defineConfig({
     screenshot: process.env.CI ? "only-on-failure" : "off",
 
     /* Record video in CI for failed tests */
-    video: process.env.CI ? "retry-with-video" : "off",
+    video: "off",
 
     /* Global timeout settings for network operations */
     actionTimeout: 30000,
