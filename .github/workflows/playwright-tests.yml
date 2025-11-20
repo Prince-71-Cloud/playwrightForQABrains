@@ -33,8 +33,8 @@ jobs:
     - name: Run Playwright tests
       id: test
       run: |
-        mkdir -p test-results
-        npx playwright test --project=${{ matrix.browser }} --reporter=line --output=test-results/
+        mkdir -p test-results/${{ matrix.browser }}
+        npx playwright test --project=${{ matrix.browser }} --reporter=line,junit --output=test-results/${{ matrix.browser }}/
       env:
         CI: true
         BASE_URL: ${{ secrets.BASE_URL }}
@@ -53,5 +53,5 @@ jobs:
       if: always()
       with:
         name: test-results-${{ matrix.browser }}
-        path: test-results/
+        path: test-results/${{ matrix.browser }}/
         retention-days: 7
